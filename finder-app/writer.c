@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <syslog.h>
-
-
+#include <errno.h>
+#include <string.h>
 
 int main(int argc, char** argv)
 {
@@ -23,9 +23,18 @@ int main(int argc, char** argv)
 
     FILE * f;
     f = fopen(writefile, "w");
-    fprintf(f, "%s", writestr);
-    syslog(LOG_DEBUG, "Writing %s to %s\n", writefile, writestr);
+    if (f == NULL)
+    {
+        syslog(LOG_ERR, "Error opening the file %s: Error %d - %s\n", writefile, errno, strerror(errno));
+        closelog();
+        return 1;
+    } else {
+        syslog(LOG_DEBUG, "Writing %s to %s\n", writefile, writestr);
+        fprintf(f, "%s", writestr);
+    }
+
     fclose(f);
 
     closelog();
+    return 0;
 }
